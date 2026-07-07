@@ -59,7 +59,7 @@ def dedupe(seq):
 
 st.set_page_config(page_title="Bail Onus Finder", page_icon="⚖️")
 st.title("⚖️ Bail Onus Finder")
-st.caption("As of July 18, 2026")
+st.caption("Reflects amendments in effect July 18, 2026")
 st.caption("Bail vettor is ultimately responsible for ensuring the onus is correctly noted.")
 
 if not CONFIG_PATH.exists():
@@ -99,7 +99,7 @@ for i, (desc, section) in enumerate(group_a):
 st.divider()
 st.subheader("Offence classification")
 indictable = st.radio(
-    "Is the offence a straight indictable offence, OR a hybrid offence for "
+    "Is the accused charged with a straight indictable offence, OR a hybrid offence for "
     "which the Crown has NOT elected to proceed summarily?",
     ["No", "Yes"],
     index=0,
@@ -109,7 +109,7 @@ indictable = st.radio(
 if indictable == "Yes":
     st.divider()
     st.subheader("Do any of these apply?")
-    st.caption("Straight indictable / hybrid-not-summary track only.")
+    st.caption("Indictable or hybrid offence charged.")
     for i, (desc, section) in enumerate(group_b):
         if st.checkbox(desc, key=f"b{i}"):
             picked.append((desc, section))
