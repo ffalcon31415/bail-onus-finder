@@ -60,7 +60,7 @@ def dedupe(seq):
 st.set_page_config(page_title="Bail Onus Finder", page_icon="⚖️")
 st.title("⚖️ Bail Onus Finder")
 st.caption("Reflects amendments in effect July 18, 2026")
-st.caption("Bail vettor is ultimately responsible for ensuring the onus is correctly noted.")
+st.caption("Below may contain errors. You are ultimately responsible for ensuring the onus is correctly noted as per Criminal Code.")
 
 if not CONFIG_PATH.exists():
     st.error(f"Configuration file not found:\n\n{CONFIG_PATH}\n\n"
