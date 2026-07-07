@@ -3,213 +3,283 @@
 ;==============================================================================
 ; Bail Onus Finder  (rules as of July 18, 2026)
 ;
-; Walks the user through a questionnaire and determines whether bail is CROWN
-; ONUS or REVERSE ONUS. If reverse onus, the triggering section numbers (only)
-; are copied to the clipboard.
+; A step-by-step questionnaire that determines whether bail is CROWN ONUS or
+; REVERSE ONUS. If reverse onus, the triggering section numbers (only), comma-
+; separated, are placed on the clipboard.
 ;
-; NOTE: rules.md line 12 wrote "525(6)(c)" for the s.145(2)-(5)-while-at-large
-;       condition. There is no s.525(6)(c); the correct reverse-onus provision
-;       is 515(6)(c), which is what is used below. Change the string on that
-;       line if the literal "525(6)(c)" is genuinely intended.
+; Flow:
+;   Step 1  Youth vs Adult      -> Youth finishes immediately (Crown, YCJA)
+;   Step 2  Checklist A         -> conditions that apply regardless of class.
+;   Step 3  Indictable? (gate)  -> straight indictable / hybrid-not-summary?
+;   Step 4  Checklist B         -> shown ONLY if step 3 is "Yes"
+;
+; The reverse-onus conditions live in an editable config file (OnusRules.txt),
+; loaded at startup. Edit that file to change the questionnaire - no code needed.
 ;==============================================================================
 
-; ---- Rule data --------------------------------------------------------------
-; Reverse-onus conditions that apply REGARDLESS of offence classification.
-groupA := [
-    ["A s.524 application has been granted",                                                              "524(4)"],
-    ["IPV offence (incl. sexual offence, crim. harassment, HT) AND accused was previously convicted or"
-        . " discharged (discharge still on CPIC) for an IPV offence",                                     "515(6)(b.1)"],
-    ["IPV offence AND at the time of the offence accused was on an IPV peace bond under s.810",            "515(6)(b.1)"],
-    ["Offence under s.145(2)-(5) while at large after being released for another Code offence",           "515(6)(c)"],
-    ["CDSA offence punishable by life under ss.5-7, or a conspiracy for such an offence",                 "515(6)(d)"],
-    ["Breach of a conditional sentence order",                                                            "742.6(2)"]
-]
+; ---- Rule data (populated from OnusRules.txt) -------------------------------
+groupA := []      ; Checklist A - apply REGARDLESS of offence classification
+groupB := []      ; Checklist B - apply only on the indictable / not-summary track
+LoadRules()
 
-; Reverse-onus conditions that apply ONLY where the offence is a straight
-; indictable offence OR a hybrid offence for which the Crown has NOT elected
-; to proceed summarily.
-groupB := [
-    ["Accused not ordinarily resident in Canada",                                                         "515(6)(b)"],
-    ["Any assault or sexual assault where choking, suffocating or strangling is alleged",                 "515(6)(a)(ix)"],
-    ["Accused was on release for a straight indictable / hybrid-not-elected-summarily offence",           "515(6)(a)(i)"],
-    ["Firearm possession / non-use offence (ss.95, 98, 98.1, 99, 100, 102 or 103)",                       "515(6)(a)(vi)"],
-    ["Offence committed with a firearm (ss.244, 244.2, 239, 272, 273, 279(1), 279.1, 344 or 346)",        "515(6)(a)(vi) to (vii)"],
-    ["Firearm / ammo / prohibited weapon etc. offence while on a prohibition order",                      "515(6)(a)(viii)"],
-    ["Human trafficking offence under s.279.01 or 279.011",                                               "515(6)(a)(x)"],
-    ["Motor vehicle theft with violence (s.333.1(3)) or for the benefit of a criminal org (s.333.1(4))",  "515(6)(a)(xi)"],
-    ["Extortion where violence or threats are alleged",                                                   "515(6)(a)(xii)"],
-    ["Violent offence AND two or more prior commissions of violent offences (Crown not summary)",         "515(6)(a)(xii.1)"],
-    ["Residential break & enter",                                                                         "515(6)(a)(xiii)"],
-    ["Violent offence w/ weapon (10+ yr max) AND conviction in past 10 yrs in that category (Crown not summary)", "515(6)(b.2)"],
-    ["Certain criminal organization, terrorism, or other-Act offences",                                  "515(6)(a)(ii) to (v) and (xiv)"]
-]
-
-; ---- Build the GUI ----------------------------------------------------------
-g := Gui("+Resize", "Bail Onus Finder")
-g.SetFont("s9", "Segoe UI")
-g.MarginX := 14
-g.MarginY := 12
-
-g.SetFont("s11 Bold")
-g.Add("Text", "xm w620", "Bail Onus Finder")
-g.SetFont("s8 Norm cGray")
-g.Add("Text", "xm w620", "Rules as of July 18, 2026. Answer the questions, then click Determine Onus.")
-g.SetFont("s9 Norm")
-
-; Step 1 - youth vs adult
-g.SetFont("s9 Bold")
-g.Add("Text", "xm w620 y+12", "1.  Is this a youth matter or an adult matter?")
-g.SetFont("s9 Norm")
-rbAdult := g.Add("Radio", "xm+16 y+6 Checked", "Adult")
-rbYouth := g.Add("Radio", "xm+16 y+4", "Youth  (YCJA — always Crown Onus)")
-
-; Step 2 - conditions that apply regardless of classification
-g.SetFont("s9 Bold")
-g.Add("Text", "xm w620 y+14", "2.  Do any of these apply?  (apply regardless of offence classification)")
-g.SetFont("s9 Norm")
-cbA := []
-for item in groupA {
-    c := g.Add("Checkbox", "xm+16 y+6 w600", item[1])
-    cbA.Push({ ctrl: c, sec: item[2], label: CleanLabel(item[1]) })
-}
-
-; Step 3 - offence classification gate
-g.SetFont("s9 Bold")
-g.Add("Text", "xm w620 y+14", "3.  Offence classification")
-g.SetFont("s9 Norm")
-clsCB := g.Add("Checkbox", "xm+16 y+6 w600",
-    "Charged with a straight indictable offence, OR a hybrid offence for which the Crown has NOT elected summarily")
-
-; Step 4 - conditions that only apply on the indictable / not-summary track
-g.SetFont("s9 Bold")
-lblB := g.Add("Text", "xm w620 y+12", "4.  Do any of these apply?  (only if box in step 3 is checked)")
-g.SetFont("s9 Norm")
-cbB := []
-for item in groupB {
-    c := g.Add("Checkbox", "xm+16 y+6 w600", item[1])
-    cbB.Push({ ctrl: c, sec: item[2], label: CleanLabel(item[1]) })
-}
-
-; Buttons
-btnGo := g.Add("Button", "xm y+16 w150 Default", "Determine Onus")
-btnReset := g.Add("Button", "x+10 yp w110", "Reset")
-btnClose := g.Add("Button", "x+10 yp w110", "Close")
-
-; ---- Wire up events ---------------------------------------------------------
-rbAdult.OnEvent("Click", UpdateEnabled)
-rbYouth.OnEvent("Click", UpdateEnabled)
-clsCB.OnEvent("Click", UpdateEnabled)
-btnGo.OnEvent("Click", DetermineOnus)
-btnReset.OnEvent("Click", ResetForm)
-btnClose.OnEvent("Click", (*) => g.Destroy())
-
-UpdateEnabled()          ; set initial enabled/disabled state
-g.Show()
+; ---- Shared state across steps (lets Back/Start-over restore selections) -----
+state := { isYouth: false, indictable: false, aVals: [], bVals: [] }
+ResetState()
+StepYouthAdult()      ; launch the wizard
 return
 
-; ---- Logic ------------------------------------------------------------------
-UpdateEnabled(*) {
-    global cbA, cbB, clsCB, lblB, rbAdult
-    isAdult := rbAdult.Value
-
-    for it in cbA
-        it.ctrl.Enabled := isAdult
-    clsCB.Enabled := isAdult
-
-    bOn := isAdult && clsCB.Value
-    lblB.Enabled := bOn
-    for it in cbB
-        it.ctrl.Enabled := bOn
-}
-
-DetermineOnus(*) {
-    global cbA, cbB, clsCB, rbYouth
-
-    ; Youth is always Crown Onus (YCJA) - overrides everything else.
-    if (rbYouth.Value) {
-        MsgBox("Result:  CROWN ONUS`n`nOnus for youth matters is always Crown Onus (YCJA).",
-            "Bail Onus Finder", "Iconi")
-        return
+; ---- Load the rule config ---------------------------------------------------
+LoadRules() {
+    global groupA, groupB
+    path := A_ScriptDir "\OnusRules.txt"
+    if !FileExist(path) {
+        MsgBox("Configuration file not found:`n`n" path "`n`n"
+            . "OnusRules.txt must sit in the same folder as this script.",
+            "Bail Onus Finder", "Iconx")
+        ExitApp()
     }
 
-    sections := []
-    reasons  := []
+    target := ""
+    for line in StrSplit(FileRead(path, "UTF-8"), "`n", "`r") {
+        t := Trim(line)
+        if (t = "" || SubStr(t, 1, 1) = ";")
+            continue                                  ; blank line or comment
+        if (SubStr(t, 1, 1) = "[" && SubStr(t, -1) = "]") {
+            name := StrUpper(Trim(SubStr(t, 2, StrLen(t) - 2)))
+            target := (name = "ALWAYS") ? "A" : (name = "INDICTABLE") ? "B" : ""
+            continue                                  ; section header
+        }
+        pos := InStr(t, "|")
+        if (!pos || target = "")
+            continue                                  ; skip malformed / ungrouped
+        sec  := Trim(SubStr(t, 1, pos - 1))
+        desc := Trim(SubStr(t, pos + 1))
+        if (sec = "" || desc = "")
+            continue
+        (target = "A" ? groupA : groupB).Push([desc, sec])
+    }
 
-    for it in cbA
-        if (it.ctrl.Value) {
-            AddUnique(sections, it.sec)
-            reasons.Push(it.label " → " it.sec)
+    if (groupA.Length = 0 && groupB.Length = 0) {
+        MsgBox("No rules were loaded from:`n`n" path "`n`n"
+            . "Check that it contains [ALWAYS] / [INDICTABLE] sections with "
+            . "'section | description' lines.",
+            "Bail Onus Finder", "Iconx")
+        ExitApp()
+    }
+}
+
+ResetState() {
+    global state, groupA, groupB
+    state.isYouth := false
+    state.indictable := false
+    state.aVals := []
+    state.bVals := []
+    Loop groupA.Length
+        state.aVals.Push(false)
+    Loop groupB.Length
+        state.bVals.Push(false)
+}
+
+; ---- Step 1: Youth vs Adult -------------------------------------------------
+StepYouthAdult(*) {
+    global state
+    g := NewStep("Step 1 of 4")
+    g.SetFont("s14 Bold")
+    g.Add("Text", "xm w700", "Is this a youth matter or an adult matter?")
+    g.SetFont("s12 Norm")
+    rbAdult := g.Add("Radio", "xm+8 y+10", "Adult")
+    rbYouth := g.Add("Radio", "xm+8 y+6", "Youth  (YCJA — always Crown Onus)")
+    (state.isYouth ? rbYouth : rbAdult).Value := true
+
+    btnNext := g.Add("Button", "xm y+18 w150 Default", "Next  ▶")
+    btnNext.OnEvent("Click", NextH)
+    g.Show()
+
+    NextH(*) {
+        state.isYouth := rbYouth.Value ? true : false
+        g.Destroy()
+        if (state.isYouth)
+            ShowCrown("Onus for youth matters is always Crown Onus (YCJA).")
+        else
+            StepGroupA()
+    }
+}
+
+; ---- Step 2: Checklist A ----------------------------------------------------
+StepGroupA(*) {
+    global groupA, state
+    g := NewStep("Step 2 of 4")
+    g.SetFont("s14 Bold")
+    g.Add("Text", "xm w700", "Do any of these apply?")
+    g.SetFont("s11 Norm")
+    g.Add("Text", "xm w700", "These trigger reverse onus regardless of offence classification.")
+    g.SetFont("s12 Norm")
+
+    ctrls := []
+    for i, item in groupA {
+        c := g.Add("Checkbox", "xm+8 y+8 w684", item[1])
+        c.Value := state.aVals[i]
+        ctrls.Push(c)
+    }
+
+    btnBack := g.Add("Button", "xm y+18 w130", "◀  Back")
+    btnNext := g.Add("Button", "x+8 yp w150 Default", "Next  ▶")
+    Save() {
+        for i, c in ctrls
+            state.aVals[i] := c.Value ? true : false
+    }
+    btnBack.OnEvent("Click", (*) => (Save(), g.Destroy(), StepYouthAdult()))
+    btnNext.OnEvent("Click", (*) => (Save(), g.Destroy(), StepIndictable()))
+    g.Show()
+}
+
+; ---- Step 3: Indictable gate ------------------------------------------------
+StepIndictable(*) {
+    global state
+    g := NewStep("Step 3 of 4")
+    g.SetFont("s14 Bold")
+    g.Add("Text", "xm w700", "Offence classification")
+    g.SetFont("s12 Norm")
+    g.Add("Text", "xm w700 y+8",
+        "Is the offence a straight indictable offence, OR a hybrid offence for which the Crown has NOT elected to proceed summarily?")
+    rbYes := g.Add("Radio", "xm+8 y+10", "Yes")
+    rbNo  := g.Add("Radio", "xm+8 y+6", "No")
+    (state.indictable ? rbYes : rbNo).Value := true
+
+    btnBack := g.Add("Button", "xm y+18 w130", "◀  Back")
+    btnNext := g.Add("Button", "x+8 yp w150 Default", "Next  ▶")
+    btnBack.OnEvent("Click", (*) => (Save(), g.Destroy(), StepGroupA()))
+    btnNext.OnEvent("Click", NextH)
+    g.Show()
+
+    Save() {
+        state.indictable := rbYes.Value ? true : false
+    }
+    NextH(*) {
+        Save()
+        g.Destroy()
+        if (state.indictable)
+            StepGroupB()
+        else
+            Finish()
+    }
+}
+
+; ---- Step 4: Checklist B (only reached when step 3 = Yes) -------------------
+StepGroupB(*) {
+    global groupB, state
+    g := NewStep("Step 4 of 4")
+    g.SetFont("s14 Bold")
+    g.Add("Text", "xm w700", "Do any of these apply?")
+    g.SetFont("s11 Norm")
+    g.Add("Text", "xm w700", "Straight indictable / hybrid-not-summary track only.")
+    g.SetFont("s12 Norm")
+
+    ctrls := []
+    for i, item in groupB {
+        c := g.Add("Checkbox", "xm+8 y+8 w684", item[1])
+        c.Value := state.bVals[i]
+        ctrls.Push(c)
+    }
+
+    btnBack := g.Add("Button", "xm y+18 w130", "◀  Back")
+    btnDone := g.Add("Button", "x+8 yp w190 Default", "Determine Onus")
+    Save() {
+        for i, c in ctrls
+            state.bVals[i] := c.Value ? true : false
+    }
+    btnBack.OnEvent("Click", (*) => (Save(), g.Destroy(), StepIndictable()))
+    btnDone.OnEvent("Click", (*) => (Save(), g.Destroy(), Finish()))
+    g.Show()
+}
+
+; ---- Compute the result -----------------------------------------------------
+Finish() {
+    global groupA, groupB, state
+    sections := [], reasons := []
+
+    for i, item in groupA
+        if (state.aVals[i]) {
+            AddUnique(sections, item[2])
+            reasons.Push(CleanLabel(item[1]) " → " item[2])
         }
 
-    if (clsCB.Value)
-        for it in cbB
-            if (it.ctrl.Value) {
-                AddUnique(sections, it.sec)
-                reasons.Push(it.label " → " it.sec)
+    if (state.indictable)
+        for i, item in groupB
+            if (state.bVals[i]) {
+                AddUnique(sections, item[2])
+                reasons.Push(CleanLabel(item[1]) " → " item[2])
             }
 
     if (sections.Length = 0) {
-        MsgBox("Result:  CROWN ONUS`n`nNone of the reverse-onus conditions apply.",
-            "Bail Onus Finder", "Iconi")
+        ShowCrown("None of the reverse-onus conditions apply.")
         return
     }
 
-    ; Reverse onus - put the section numbers (only), comma-separated, on the clipboard.
     clip := ""
     for s in sections
         clip .= (clip = "" ? "" : ", ") s
-    A_Clipboard := clip
-
     ShowReverseResult(clip, reasons)
+}
+
+; ---- Result windows ---------------------------------------------------------
+ShowCrown(msg) {
+    r := NewStep("Result")
+    r.SetFont("s16 Bold c000000")
+    r.Add("Text", "xm w560", "Result:  CROWN ONUS")
+    r.SetFont("s12 Norm")
+    r.Add("Text", "xm w560 y+12", msg)
+    btnRestart := r.Add("Button", "xm y+18 w110", "Start over")
+    btnClose := r.Add("Button", "x+8 yp w110 Default", "Close")
+    btnRestart.OnEvent("Click", (*) => (r.Destroy(), ResetState(), StepYouthAdult()))
+    btnClose.OnEvent("Click", (*) => r.Destroy())
+    r.Show()
 }
 
 ShowReverseResult(clip, reasons) {
     why := ""
-    for r in reasons
-        why .= "   • " r "`n"
+    for r0 in reasons
+        why .= "   • " r0 "`n"
     why := RTrim(why, "`n")
 
-    r := Gui("+Owner", "Bail Onus Finder — Result")
-    r.SetFont("s9", "Segoe UI")
-    r.MarginX := 14
-    r.MarginY := 12
+    r := NewStep("Result")
+    r.SetFont("s16 Bold c000000")
+    r.Add("Text", "xm w560", "Result:  REVERSE ONUS")
+    r.SetFont("s12 Norm")
 
-    r.SetFont("s11 Bold cRed")
-    r.Add("Text", "xm w440", "Result:  REVERSE ONUS")
-    r.SetFont("s9 Norm")
+    r.Add("Text", "xm w560 y+12", "Section numbers:")
+    ; Read-only but fully selectable/copyable preview; nothing is copied until the button is clicked.
+    r.Add("Edit", "xm w560 y+4 r1 ReadOnly", clip)
 
-    r.Add("Text", "xm w440 y+12", "Section numbers (copied to clipboard):")
-    ; Read-only but fully selectable/copyable preview of the clipboard contents.
-    edit := r.Add("Edit", "xm w440 y+4 r1 ReadOnly", clip)
+    r.Add("Text", "xm w560 y+12", "Reasons:")
+    r.Add("Edit", "xm w560 y+4 r" (reasons.Length < 8 ? reasons.Length : 8) " ReadOnly -Wrap +HScroll", why)
 
-    r.Add("Text", "xm w440 y+12", "Reasons:")
-    r.Add("Edit", "xm w440 y+4 r" (reasons.Length < 8 ? reasons.Length : 8) " ReadOnly -Wrap +HScroll", why)
-
-    btnCopy := r.Add("Button", "xm y+14 w150 Default", "Copy to clipboard again")
-    btnOk := r.Add("Button", "x+10 yp w110", "Close")
+    btnCopy := r.Add("Button", "xm y+16 w220 Default", "Copy to clipboard")
+    btnRestart := r.Add("Button", "x+8 yp w130", "Start over")
+    btnClose := r.Add("Button", "x+8 yp w110", "Close")
     btnCopy.OnEvent("Click", ReCopy)
-    btnOk.OnEvent("Click", (*) => r.Destroy())
+    btnRestart.OnEvent("Click", (*) => (r.Destroy(), ResetState(), StepYouthAdult()))
+    btnClose.OnEvent("Click", (*) => r.Destroy())
+
     ReCopy(*) {
         A_Clipboard := clip
         ToolTip("Copied: " clip)
         SetTimer(() => ToolTip(), -1500)
     }
-
     r.Show()
 }
 
-ResetForm(*) {
-    global cbA, cbB, clsCB, rbAdult
-    rbAdult.Value := true
-    clsCB.Value := false
-    for it in cbA
-        it.ctrl.Value := false
-    for it in cbB
-        it.ctrl.Value := false
-    UpdateEnabled()
+; ---- Helpers ----------------------------------------------------------------
+NewStep(subtitle) {
+    g := Gui("+AlwaysOnTop", "Bail Onus Finder — " subtitle)
+    g.SetFont("s12 c000000", "Segoe UI")
+    g.MarginX := 16
+    g.MarginY := 14
+    g.OnEvent("Close", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    return g
 }
 
-; ---- Helpers ----------------------------------------------------------------
 AddUnique(arr, val) {
     for v in arr
         if (v = val)
@@ -218,6 +288,5 @@ AddUnique(arr, val) {
 }
 
 CleanLabel(txt) {
-    ; collapse any wrapped/continuation whitespace into single spaces for display
     return RegExReplace(txt, "\s+", " ")
 }

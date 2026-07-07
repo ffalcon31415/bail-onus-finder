@@ -1,0 +1,47 @@
+; ============================================================================
+;  Bail Onus Finder - rule configuration
+; ----------------------------------------------------------------------------
+;  Edit this file to change the questionnaire. No programming needed.
+;
+;  Format of each rule line:   <section number>  |  <description>
+;    - Text before the "|" is placed on the clipboard (section number only).
+;    - Text after the "|" is the checkbox label shown to the user.
+;    - Put each rule on ONE line.
+;
+;  Two groups, marked by headers:
+;    [ALWAYS]      conditions that trigger reverse onus regardless of the
+;                  offence classification (shown at Step 2).
+;    [INDICTABLE]  conditions that apply ONLY where the offence is straight
+;                  indictable, OR hybrid and the Crown has NOT elected
+;                  summarily (shown at Step 4).
+;
+;  Lines starting with ";" are comments. Blank lines are ignored.
+;  Order is preserved: rules appear (and sections are listed) in file order.
+;
+;  NOTE: rules.md wrote "525(6)(c)" for the s.145(2)-(5) item, but there is no
+;        s.525(6)(c); the correct provision is 515(6)(c), used below. Change it
+;        here if the literal "525(6)(c)" is genuinely intended.
+; ============================================================================
+
+[ALWAYS]
+524(4)       | A s.524 application has been granted
+515(6)(b.1)  | IPV offence (incl. sexual offence, crim. harassment, HT) AND accused was previously convicted or discharged (discharge still on CPIC) for an IPV offence
+515(6)(b.1)  | IPV offence AND at the time of the offence accused was on an IPV peace bond under s.810
+515(6)(c)    | Offence under s.145(2)-(5) while at large after being released for another Code offence
+515(6)(d)    | CDSA offence punishable by life under ss.5-7, or a conspiracy for such an offence
+742.6(2)     | Breach of a conditional sentence order
+
+[INDICTABLE]
+515(6)(b)               | Accused not ordinarily resident in Canada
+515(6)(a)(ix)           | Any assault or sexual assault where choking, suffocating or strangling is alleged
+515(6)(a)(i)            | Accused was on release for a straight indictable / hybrid-not-elected-summarily offence
+515(6)(a)(vi)           | Firearm possession / non-use offence (ss.95, 98, 98.1, 99, 100, 102 or 103)
+515(6)(a)(vi) to (vii)  | Offence committed with a firearm (ss.244, 244.2, 239, 272, 273, 279(1), 279.1, 344 or 346)
+515(6)(a)(viii)         | Firearm / ammo / prohibited weapon etc. offence while on a prohibition order
+515(6)(a)(x)            | Human trafficking offence under s.279.01 or 279.011
+515(6)(a)(xi)           | Motor vehicle theft with violence (s.333.1(3)) or for the benefit of a criminal org (s.333.1(4))
+515(6)(a)(xii)          | Extortion where violence or threats are alleged
+515(6)(a)(xii.1)        | Violent offence AND two or more prior commissions of violent offences (Crown not summary)
+515(6)(a)(xiii)         | Residential break & enter
+515(6)(b.2)             | Violent offence w/ weapon (10+ yr max) AND conviction in past 10 yrs in that category (Crown not summary)
+515(6)(a)(ii) to (v) and (xiv) | Certain criminal organization, terrorism, or other-Act offences
