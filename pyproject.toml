@@ -1,0 +1,9 @@
+[project]
+name = "bail-onus-finder"
+version = "0.1.0"
+description = "Bail onus questionnaire (Streamlit + AutoHotkey)"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "streamlit>=1.58.0",
+]
