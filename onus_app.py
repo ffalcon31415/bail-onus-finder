@@ -99,7 +99,7 @@ for i, (desc, section) in enumerate(group_a):
 st.divider()
 st.subheader("Offence classification")
 indictable = st.radio(
-    "Is the accused charged with a straight indictable offence, OR a hybrid offence for "
+    "Do the charges for which the accused is applying for bail include a straight indictable offence, OR a hybrid offence for "
     "which the Crown has NOT elected to proceed summarily?",
     ["No", "Yes"],
     index=0,

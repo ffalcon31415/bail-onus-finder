@@ -49,6 +49,3 @@ must be in the same folder.
 3. If the offence is straight indictable / hybrid-not-summary, any ticked
    `[INDICTABLE]` condition also makes it reverse onus.
 4. Reverse onus → the distinct section numbers (in file order) are the reasons.
-
-> Note: `rules.md` wrote `525(6)(c)` for the s.145(2)–(5) item; there is no
-> s.525(6)(c). The correct provision, `515(6)(c)`, is used in `OnusRules.txt`.
