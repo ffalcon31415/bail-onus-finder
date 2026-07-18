@@ -71,7 +71,7 @@ LoadRules() {
 ResetState() {
     global state, groupA, groupB
     state.isYouth := false
-    state.indictable := false
+    state.indictable := true
     state.aVals := []
     state.bVals := []
     Loop groupA.Length
