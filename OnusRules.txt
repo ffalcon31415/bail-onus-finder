@@ -36,7 +36,7 @@
 515(6)(a)(vi)           | Certain firearm offences (ss.95, 98, 98.1, 99, 100, 102 or 103)
 515(6)(a)(vi) to (vii)  | Certain offences committed with a firearm (ss.244, 244.2, 239, 272, 273, 279(1), 279.1, 344 or 346)
 515(6)(a)(x)            | Human trafficking under s.279.01 or 279.011
-515(6)(a)(xi)           | Motor vehicle theft with violence (s.333.1(3)) or for the benefit of a criminal org (s.333.1(4))
+515(6)(a)(xi)           | Motor vehicle theft with violence under s.333.1(3) or for the benefit of a criminal org under s.333.1(4)
 515(6)(a)(xii)          | Extortion with violence used, threatened, or attempted 
 515(6)(a)(xii.1)        | Violent offence AND two or more prior convictions for violent offences prosecuted by indictment
 515(6)(b.2)             | Violent offence w/ weapon (10+ yr max sentence) AND conviction in past 10 yrs for an offence in that category which was prosecuted by indictment

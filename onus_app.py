@@ -122,6 +122,7 @@ if not picked:
 else:
     sections = dedupe(section for _desc, section in picked)
     st.subheader("Result: REVERSE ONUS")
+    st.write("Onus on the accused to show cause why \"detention in custody is not justified by _clearly demonstrating_ that their proposed release plan addresses the risks posed by the accused\".")
     st.write("**Section numbers** (click the copy icon to copy):")
     st.code(", ".join(sections), language=None)
     st.write("**Reasons:**")
