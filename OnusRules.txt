@@ -22,13 +22,14 @@
 
 [ALWAYS]
 515(6)(c)       | Offence under s.145(2)-(5) while at large after being released for another offence under CC
-524(4)          | 524 application (if granted)
 515(6)(b.1)(i)  | IPV (incl. sexual offence, crim. harassment, HT) AND accused was previously convicted or discharged for IPV offence (discharge within retention period)
 515(6)(b.1)(ii) | IPV and at the time of the offence accused was on an IPV peace bond under CC
 515(6)(d)       | CDSA offence punishable by life under ss.5-7, or a conspiracy for such an offence
 742.6(2)        | Breach of a Conditional Sentence Order
+524(4)(c)       | 524 application (once granted) if any of the outstanding charges is reverse onus due to 515(6) or is a 469 offence
 
 [INDICTABLE]
+524(4)(b)               | 524 application (once granted) 
 515(6)(a)(i)            | On release for an indictable or hybrid-not-elected-summarily offence
 515(6)(a)(ix)           | Any degree of assault or sexual assault where choking, suffocating or strangling is alleged
 515(6)(b)               | Not ordinarily resident in Canada
