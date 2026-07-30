@@ -30,7 +30,6 @@
 524(4)(c)       | 524 application (once granted) if any of the outstanding charges is reverse onus due to 515(6) or is a 469 offence
 
 [INDICTABLE]
-524(4)(b)               | There is a 524 application and any o/s matter is indictable or hybrid without a summary election (once granted) 
 515(6)(a)(i)            | On release for an indictable or hybrid-not-elected-summarily offence
 515(6)(a)(ix)           | Any degree of assault or sexual assault where choking, suffocating or strangling is alleged
 515(6)(b)               | Not ordinarily resident in Canada
