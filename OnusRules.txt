@@ -28,8 +28,11 @@
 742.6(2)        | Breach of a Conditional Sentence Order
 524(4)(a)       | 524 application (once granted) if the justice finds the accused has contravened or had been about to contravene a release term
 524(4)(c)       | 524 application (once granted) if any of the outstanding charges is reverse onus due to 515(6) or is a 469 offence
+523(2.1)        | Following a finding of guilt, Crown applied to vacate the release order
+522(2)          | 469 Offence
 
 [INDICTABLE]
+524(4)(b)               | 524 application (once granted)
 515(6)(a)(i)            | On release for an indictable or hybrid-not-elected-summarily offence
 515(6)(a)(ix)           | Any degree of assault or sexual assault where choking, suffocating or strangling is alleged
 515(6)(b)               | Not ordinarily resident in Canada
@@ -43,3 +46,4 @@
 515(6)(b.2)             | Violent offence w/ weapon (10+ yr max sentence) AND conviction in past 10 yrs for an offence in that category which was prosecuted by indictment
 515(6)(a)(xiii)         | Residential break & enter
 515(6)(a)(ii) to (v) and (xiv) | Certain criminal organization, terrorism, IRPA, or other Act offences - see 515(6)(a)(ii)-(v) or (xiv)
+
